@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.SymbolSearch
             {
                 using var memoryStream = new MemoryStream(bytes);
                 using var streamReader = new StreamReader(memoryStream);
-                var database = new AddReferenceDatabase(ArdbVersion.V1);
+                var database = new AddReferenceDatabase();
                 database.ReadText(streamReader);
                 return database;
             }
