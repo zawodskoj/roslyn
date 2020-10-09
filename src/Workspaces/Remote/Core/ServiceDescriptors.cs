@@ -19,7 +19,6 @@ using Microsoft.CodeAnalysis.FindUsages;
 using Microsoft.CodeAnalysis.NavigateTo;
 using Microsoft.CodeAnalysis.ProjectTelemetry;
 using Microsoft.CodeAnalysis.Rename;
-using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.SymbolSearch;
 using Microsoft.CodeAnalysis.TodoComments;
 using Microsoft.ServiceHub.Framework;
@@ -42,7 +41,6 @@ namespace Microsoft.CodeAnalysis.Remote
 
         internal static readonly ImmutableDictionary<Type, (ServiceDescriptor descriptor32, ServiceDescriptor descriptor64)> Descriptors = ImmutableDictionary.CreateRange(new[]
         {
-            CreateDescriptors(typeof(IRemoteAsynchronousOperationListenerService)),
             CreateDescriptors(typeof(IRemoteTodoCommentsDiscoveryService), callbackInterface: typeof(ITodoCommentsListener)),
             CreateDescriptors(typeof(IRemoteDesignerAttributeDiscoveryService), callbackInterface: typeof(IDesignerAttributeListener)),
             CreateDescriptors(typeof(IRemoteProjectTelemetryService), callbackInterface: typeof(IProjectTelemetryListener)),

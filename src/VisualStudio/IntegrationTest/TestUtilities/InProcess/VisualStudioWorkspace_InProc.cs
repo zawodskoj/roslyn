@@ -133,7 +133,7 @@ namespace Microsoft.VisualStudio.IntegrationTest.Utilities.InProcess
                 WaitForProjectSystem(timeout);
             }
 
-            GetWaitingService().WaitForAllAsyncOperations(_visualStudioWorkspace, timeout, featureNames);
+            GetWaitingService().WaitForAllAsyncOperations(timeout, featureNames);
         }
 
         public void WaitForAllAsyncOperationsOrFail(TimeSpan timeout, params string[] featureNames)
