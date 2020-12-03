@@ -35,8 +35,8 @@ namespace Microsoft.CodeAnalysis.Remote
         private readonly Func<string, string> _featureDisplayNameProvider;
         private readonly RemoteSerializationOptions _serializationOptions;
 
-        private ServiceDescriptor(ServiceMoniker serviceMoniker, RemoteSerializationOptions serializationOptions, Func<string, string> displayNameProvider, Type? clientInterface)
-            : base(serviceMoniker, clientInterface, serializationOptions.Formatter, MessageDelimiters.BigEndianInt32LengthHeader, s_multiplexingStreamOptions)
+        private ServiceDescriptor(ServiceMoniker serviceMoniker, RemoteSerializationOptions serializationOptions, Func<string, string> displayNameProvider, Type? clientInterface, MultiplexingStream.Options? multiplexingStreamOptions)
+            : base(serviceMoniker, clientInterface, serializationOptions.Formatter, serializationOptions.MessageDelimiters, multiplexingStreamOptions)
         {
             _featureDisplayNameProvider = displayNameProvider;
             _serializationOptions = serializationOptions;
@@ -50,10 +50,10 @@ namespace Microsoft.CodeAnalysis.Remote
         }
 
         public static ServiceDescriptor CreateRemoteServiceDescriptor(string serviceName, RemoteSerializationOptions options, Func<string, string> featureDisplayNameProvider, Type? clientInterface)
-            => new(new ServiceMoniker(serviceName), options, featureDisplayNameProvider, clientInterface);
+            => new(new ServiceMoniker(serviceName), options, featureDisplayNameProvider, clientInterface, options.MessageDelimiters == MessageDelimiters.HttpLikeHeaders ? null : s_multiplexingStreamOptions);
 
         public static ServiceDescriptor CreateInProcServiceDescriptor(string serviceName, Func<string, string> featureDisplayNameProvider)
-            => new(new ServiceMoniker(serviceName), RemoteSerializationOptions.Default, featureDisplayNameProvider, clientInterface: null);
+            => new(new ServiceMoniker(serviceName), RemoteSerializationOptions.Default, featureDisplayNameProvider, clientInterface: null, s_multiplexingStreamOptions);
 
         protected override ServiceRpcDescriptor Clone()
             => new ServiceDescriptor(this);
