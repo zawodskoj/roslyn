@@ -470,7 +470,9 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>Represents the end of a triple-slash documentation comment.</summary>
         EndOfDocumentationCommentToken = 8495,
         /// <summary>Represents the end of a file.</summary>
-        EndOfFileToken = 8496, //NB: this is assumed to be the last textless token
+        EndOfFileToken = 8496, //NB: this is assumed to be the last textless token,
+        /// <summary>Represents <see langword="var"/> but immutable.</summary>
+        ValKeyword = 8497,
 
         // tokens with text
         BadToken = 8507,
@@ -727,6 +729,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         // statements that didn't fit above
         LocalFunctionStatement = 8830,
+        GivenStatement = 8831,
 
         // declarations
         CompilationUnit = 8840,

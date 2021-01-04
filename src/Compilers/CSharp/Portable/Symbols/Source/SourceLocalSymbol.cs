@@ -430,6 +430,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 switch (_declarationKind)
                 {
                     case LocalDeclarationKind.RegularVariable:
+                    case LocalDeclarationKind.ImmutableVariable:
                         Debug.Assert(node is VariableDeclaratorSyntax);
                         break;
 

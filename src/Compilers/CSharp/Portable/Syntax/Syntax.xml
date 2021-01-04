@@ -1995,6 +1995,7 @@
     <Kind Name="VarPattern" />
     <Field Name="VarKeyword" Type="SyntaxToken">
       <Kind Name="VarKeyword"/>
+      <Kind Name="ValKeyword"/>
     </Field>
     <Field Name="Designation" Type="VariableDesignationSyntax"/>
   </Node>

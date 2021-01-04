@@ -1695,6 +1695,11 @@ moreArguments:
             {
                 cause = MessageID.IDS_FIXEDLOCAL;
             }
+            else if (local.DeclarationKind == LocalDeclarationKind.ImmutableVariable)
+            {
+                Error(diagnostics, ErrorCode.ERR_AssgReadonlyLocal, node, local);
+                return;
+            }
             else
             {
                 Error(diagnostics, GetStandardLvalueError(kind), node);

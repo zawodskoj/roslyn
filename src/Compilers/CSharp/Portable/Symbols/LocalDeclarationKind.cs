@@ -69,5 +69,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This occurs as a result of error recovery in incorrect code.
         /// </summary>
         DeclarationExpressionVariable,
+
+        ImmutableVariable,
     }
 }

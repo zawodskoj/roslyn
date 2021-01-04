@@ -3542,14 +3542,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>Creates a new VarPatternSyntax instance.</summary>
         public static VarPatternSyntax VarPattern(SyntaxToken varKeyword, VariableDesignationSyntax designation)
         {
-            if (varKeyword.Kind() != SyntaxKind.VarKeyword) throw new ArgumentException(nameof(varKeyword));
+            switch (varKeyword.Kind())
+            {
+                case SyntaxKind.VarKeyword:
+                case SyntaxKind.ValKeyword: break;
+                default: throw new ArgumentException(nameof(varKeyword));
+            }
             if (designation == null) throw new ArgumentNullException(nameof(designation));
             return (VarPatternSyntax)Syntax.InternalSyntax.SyntaxFactory.VarPattern((Syntax.InternalSyntax.SyntaxToken)varKeyword.Node!, (Syntax.InternalSyntax.VariableDesignationSyntax)designation.Green).CreateRed();
         }
-
-        /// <summary>Creates a new VarPatternSyntax instance.</summary>
-        public static VarPatternSyntax VarPattern(VariableDesignationSyntax designation)
-            => SyntaxFactory.VarPattern(SyntaxFactory.Token(SyntaxKind.VarKeyword), designation);
 
         /// <summary>Creates a new RecursivePatternSyntax instance.</summary>
         public static RecursivePatternSyntax RecursivePattern(TypeSyntax? type, PositionalPatternClauseSyntax? positionalPatternClause, PropertyPatternClauseSyntax? propertyPatternClause, VariableDesignationSyntax? designation)

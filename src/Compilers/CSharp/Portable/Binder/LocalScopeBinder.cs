@@ -239,7 +239,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                         }
                         else
                         {
-                            kind = LocalDeclarationKind.RegularVariable;
+                            kind = decl.Declaration.Type.IsImmutableVar 
+                                ? LocalDeclarationKind.ImmutableVariable
+                                : LocalDeclarationKind.RegularVariable;
                         }
                         foreach (var vdecl in decl.Declaration.Variables)
                         {

@@ -3169,6 +3169,7 @@ Microsoft.CodeAnalysis.CSharp.SyntaxKind.UsingStatement = 8813 -> Microsoft.Code
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VariableDeclaration = 8794 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VariableDeclarator = 8795 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VarKeyword = 8490 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
+Microsoft.CodeAnalysis.CSharp.SyntaxKind.ValKeyword = 8497 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VarPattern = 9027 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VirtualKeyword = 8357 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind
 Microsoft.CodeAnalysis.CSharp.SyntaxKind.VoidKeyword = 8318 -> Microsoft.CodeAnalysis.CSharp.SyntaxKind

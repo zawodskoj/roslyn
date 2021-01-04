@@ -430,7 +430,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal static bool IsIdentifierVar(this Syntax.InternalSyntax.SyntaxToken node)
         {
-            return node.ContextualKind == SyntaxKind.VarKeyword;
+            return node.ContextualKind == SyntaxKind.VarKeyword || node.ContextualKind == SyntaxKind.ValKeyword;
         }
 
         internal static bool IsIdentifierVarOrPredefinedType(this Syntax.InternalSyntax.SyntaxToken node)

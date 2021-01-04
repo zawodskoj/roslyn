@@ -172,7 +172,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         public static bool IsPunctuationOrKeyword(SyntaxKind kind)
         {
-            return kind >= SyntaxKind.TildeToken && kind <= SyntaxKind.EndOfFileToken;
+            return kind >= SyntaxKind.TildeToken && kind <= SyntaxKind.ValKeyword;
         }
 
         internal static bool IsLiteral(SyntaxKind kind)
@@ -1116,6 +1116,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 case SyntaxKind.WhenKeyword:
                 case SyntaxKind.UnderscoreToken:
                 case SyntaxKind.VarKeyword:
+                case SyntaxKind.ValKeyword:
                 case SyntaxKind.OrKeyword:
                 case SyntaxKind.AndKeyword:
                 case SyntaxKind.NotKeyword:
@@ -1228,6 +1229,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return SyntaxKind.UnderscoreToken;
                 case "var":
                     return SyntaxKind.VarKeyword;
+                case "val":
+                    return SyntaxKind.ValKeyword;
                 case "and":
                     return SyntaxKind.AndKeyword;
                 case "or":
@@ -1665,6 +1668,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return "_";
                 case SyntaxKind.VarKeyword:
                     return "var";
+                case SyntaxKind.ValKeyword:
+                    return "val";
                 case SyntaxKind.AndKeyword:
                     return "and";
                 case SyntaxKind.OrKeyword:
