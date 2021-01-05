@@ -451,6 +451,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     case LocalDeclarationKind.OutVariable:
                     case LocalDeclarationKind.DeclarationExpressionVariable:
                     case LocalDeclarationKind.DeconstructionVariable:
+                    case LocalDeclarationKind.ImmutableDeconstructionVariable:
                     case LocalDeclarationKind.PatternVariable:
                         Debug.Assert(node is SingleVariableDesignationSyntax);
                         break;

@@ -70,6 +70,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         DeclarationExpressionVariable,
 
+        /// <summary>
+        /// User defined immutable local variable declared by <see cref="LocalDeclarationStatementSyntax"/>.
+        /// </summary>
         ImmutableVariable,
+
+        /// <summary>
+        /// Immutable user variable declared by a declaration expression in the left-hand-side of a deconstruction assignment.
+        /// </summary>
+        ImmutableDeconstructionVariable,
     }
 }

@@ -239,7 +239,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         }
                         else
                         {
-                            kind = decl.Declaration.Type.IsImmutableVar 
+                            kind = decl.Declaration.Type.IsImmutableVar
                                 ? LocalDeclarationKind.ImmutableVariable
                                 : LocalDeclarationKind.RegularVariable;
                         }

@@ -281,6 +281,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     case LocalDeclarationKind.ForEachIterationVariable:
                     case LocalDeclarationKind.UsingVariable:
                     case LocalDeclarationKind.ImmutableVariable:
+                    case LocalDeclarationKind.ImmutableDeconstructionVariable:
                         return false;
                     default:
                         return true;

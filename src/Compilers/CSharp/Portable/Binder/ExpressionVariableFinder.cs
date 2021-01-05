@@ -613,7 +613,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                                       nodeBinder: _enclosingBinder,
                                       closestTypeSyntax: closestTypeSyntax,
                                       identifierToken: designation.Identifier,
-                                      kind: LocalDeclarationKind.DeconstructionVariable,
+                                      kind: (deconstruction.Left as DeclarationExpressionSyntax)?.Type.IsImmutableVar == true
+                                          ? LocalDeclarationKind.ImmutableDeconstructionVariable
+                                          : LocalDeclarationKind.DeconstructionVariable,
                                       deconstruction: deconstruction);
         }
 
