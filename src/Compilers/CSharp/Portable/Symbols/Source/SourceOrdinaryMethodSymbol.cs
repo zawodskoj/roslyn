@@ -330,7 +330,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     withTypeParametersBinder,
                     TypeParameters,
                     syntax.TypeParameterList,
-                    syntax.ConstraintClauses);
+                    syntax.ConstraintClauses,
+                    DiagnosticBag.GetInstance());
 
                 ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintKinds, constraints);
             }

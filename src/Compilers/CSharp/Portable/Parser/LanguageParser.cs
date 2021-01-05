@@ -5374,7 +5374,8 @@ tryAgain:
                 return _syntaxFactory.TypeParameter(
                     default(SyntaxList<AttributeListSyntax>),
                     varianceKeyword: null,
-                    this.AddError(CreateMissingIdentifierToken(), ErrorCode.ERR_IdentifierExpected));
+                    this.AddError(CreateMissingIdentifierToken(), ErrorCode.ERR_IdentifierExpected),
+                    inlineTypeConstraints: null);
             }
 
             var attrs = default(SyntaxList<AttributeListSyntax>);
@@ -5393,7 +5394,34 @@ tryAgain:
                 varianceToken = CheckFeatureAvailability(this.EatToken(), MessageID.IDS_FeatureTypeVariance);
             }
 
-            return _syntaxFactory.TypeParameter(attrs, varianceToken, this.ParseIdentifierToken());
+            var identifierToken = this.ParseIdentifierToken();
+            var inlineTypeConstraints = this.ParseInlineTypeConstraints();
+            
+            return _syntaxFactory.TypeParameter(attrs, varianceToken, identifierToken, inlineTypeConstraints);
+        }
+
+        private InlineTypeConstraintListTailSyntax? ParseInlineTypeConstraintTail()
+        {
+            if (this.CurrentToken.Kind != SyntaxKind.PlusToken) 
+                return null;
+
+            var plus = this.EatToken(SyntaxKind.PlusToken);
+            var first = ParseTypeParameterConstraint();
+            var tail = ParseInlineTypeConstraintTail();
+            
+            return SyntaxFactory.InlineTypeConstraintListTail(plus, first, tail);
+        }
+        
+        private InlineTypeConstraintListSyntax? ParseInlineTypeConstraints()
+        {
+            if (this.CurrentToken.Kind != SyntaxKind.ColonToken) 
+                return null;
+
+            var colon = this.EatToken(SyntaxKind.ColonToken);
+            var first = ParseTypeParameterConstraint();
+            var tail = ParseInlineTypeConstraintTail();
+            
+            return SyntaxFactory.InlineTypeConstraintList(colon, first, tail);
         }
 
         // Parses the parts of the names between Dots and ColonColons.

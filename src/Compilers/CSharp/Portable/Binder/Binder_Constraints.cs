@@ -14,6 +14,16 @@ namespace Microsoft.CodeAnalysis.CSharp
 {
     internal partial class Binder
     {
+        internal SeparatedSyntaxList<TypeParameterConstraintSyntax> RecurCollectInlineConstraints(
+            SeparatedSyntaxList<TypeParameterConstraintSyntax> list,
+            InlineTypeConstraintListTailSyntax? tail)
+        {
+            if (tail == null)
+                return list;
+            else
+                return RecurCollectInlineConstraints(list.Add(tail.Constraint), tail.Tail);
+        }
+        
         /// <summary>
         /// Return a collection of bound constraint clauses indexed by type parameter
         /// ordinal. All constraint clauses are bound, even if there are multiple constraints
@@ -54,6 +64,51 @@ namespace Microsoft.CodeAnalysis.CSharp
             var results = ArrayBuilder<TypeParameterConstraintClause?>.GetInstance(n, fillWithValue: null);
             var syntaxNodes = ArrayBuilder<ArrayBuilder<TypeConstraintSyntax>?>.GetInstance(n, fillWithValue: null);
 
+            // Bind each inline constraint and add to the results.
+            foreach (var typeParameter in typeParameterList.Parameters)
+            {
+                if (typeParameter.InlineTypeConstraints == null) continue;
+
+                var constraintList = RecurCollectInlineConstraints(
+                    new SeparatedSyntaxList<TypeParameterConstraintSyntax>()
+                        .Add(typeParameter.InlineTypeConstraints.FirstConstraint),
+                    typeParameter.InlineTypeConstraints.Tail
+                );
+
+                
+                var name = typeParameter.Identifier.ValueText;
+                RoslynDebug.Assert(name is object);
+                int ordinal;
+                if (names.TryGetValue(name, out ordinal))
+                {
+                    Debug.Assert(ordinal >= 0);
+                    Debug.Assert(ordinal < n);
+            
+                    (TypeParameterConstraintClause constraintClause, ArrayBuilder<TypeConstraintSyntax>? typeConstraintNodes) = this.BindTypeParameterConstraints(typeParameterList.Parameters[ordinal], constraintList, isForOverride, diagnostics);
+                    if (results[ordinal] == null)
+                    {
+                        results[ordinal] = constraintClause;
+                        syntaxNodes[ordinal] = typeConstraintNodes;
+                    }
+                    else
+                    {
+                        // "A constraint clause has already been specified for type parameter '{0}'. ..."
+                        diagnostics.Add(ErrorCode.ERR_DuplicateConstraintClause, typeParameter.InlineTypeConstraints.Location, name);
+                        typeConstraintNodes?.Free();
+                    }
+                }
+                else
+                {
+                    // Unrecognized type parameter. Don't bother binding the constraints
+                    // (the ": I<U>" in "where U : I<U>") since that will lead to additional
+                    // errors ("type or namespace 'U' could not be found") if the type
+                    // parameter is referenced in the constraints.
+            
+                    // "'{1}' does not define type parameter '{0}'"
+                    diagnostics.Add(ErrorCode.ERR_TyVarNotFoundInConstraint, typeParameter.InlineTypeConstraints.Location, name, containingSymbol.ConstructedFrom());
+                }
+            }
+
             // Bind each clause and add to the results.
             foreach (var clause in clauses)
             {
@@ -65,7 +120,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     Debug.Assert(ordinal >= 0);
                     Debug.Assert(ordinal < n);
 
-                    (TypeParameterConstraintClause constraintClause, ArrayBuilder<TypeConstraintSyntax>? typeConstraintNodes) = this.BindTypeParameterConstraints(typeParameterList.Parameters[ordinal], clause, isForOverride, diagnostics);
+                    (TypeParameterConstraintClause constraintClause, ArrayBuilder<TypeConstraintSyntax>? typeConstraintNodes) = this.BindTypeParameterConstraints(typeParameterList.Parameters[ordinal], clause.Constraints, isForOverride, diagnostics);
                     if (results[ordinal] == null)
                     {
                         results[ordinal] = constraintClause;
@@ -95,7 +150,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 if (results[i] == null)
                 {
-                    results[i] = GetDefaultTypeParameterConstraintClause(typeParameterList.Parameters[i], isForOverride);
+                    results[i] = GetDefaultTypeParameterConstraintClause(typeParameterList.Parameters[i], diagnostics, isForOverride);
                 }
             }
 
@@ -114,12 +169,11 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>
         /// Bind and return a single type parameter constraint clause along with syntax nodes corresponding to type constraints.
         /// </summary>
-        private (TypeParameterConstraintClause, ArrayBuilder<TypeConstraintSyntax>?) BindTypeParameterConstraints(TypeParameterSyntax typeParameterSyntax, TypeParameterConstraintClauseSyntax constraintClauseSyntax, bool isForOverride, DiagnosticBag diagnostics)
+        private (TypeParameterConstraintClause, ArrayBuilder<TypeConstraintSyntax>?) BindTypeParameterConstraints(TypeParameterSyntax typeParameterSyntax, SeparatedSyntaxList<TypeParameterConstraintSyntax> constraintsSyntax, bool isForOverride, DiagnosticBag diagnostics)
         {
             var constraints = TypeParameterConstraintKind.None;
             ArrayBuilder<TypeWithAnnotations>? constraintTypes = null;
             ArrayBuilder<TypeConstraintSyntax>? syntaxBuilder = null;
-            SeparatedSyntaxList<TypeParameterConstraintSyntax> constraintsSyntax = constraintClauseSyntax.Constraints;
             Debug.Assert(!InExecutableBinder); // Cannot eagerly report diagnostics handled by LazyMissingNonNullTypesContextDiagnosticInfo 
             bool hasTypeLikeConstraint = false;
             bool reportedOverrideWithConstraints = false;
@@ -321,21 +375,18 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
-        internal ImmutableArray<TypeParameterConstraintClause> GetDefaultTypeParameterConstraintClauses(TypeParameterListSyntax typeParameterList)
+        internal ImmutableArray<TypeParameterConstraintClause> GetDefaultTypeParameterConstraintClauses(
+            TypeParameterListSyntax typeParameterList,
+            DiagnosticBag diagnostics)
         {
             var builder = ArrayBuilder<TypeParameterConstraintClause>.GetInstance(typeParameterList.Parameters.Count);
 
             foreach (TypeParameterSyntax typeParameterSyntax in typeParameterList.Parameters)
             {
-                builder.Add(GetDefaultTypeParameterConstraintClause(typeParameterSyntax));
+                builder.Add(GetDefaultTypeParameterConstraintClause(typeParameterSyntax, diagnostics));
             }
 
             return builder.ToImmutableAndFree();
-        }
-
-        private TypeParameterConstraintClause GetDefaultTypeParameterConstraintClause(TypeParameterSyntax typeParameterSyntax, bool isForOverride = false)
-        {
-            return isForOverride || AreNullableAnnotationsEnabled(typeParameterSyntax.Identifier) ? TypeParameterConstraintClause.Empty : TypeParameterConstraintClause.ObliviousNullabilityIfReferenceType;
         }
 
         /// <summary>
@@ -354,6 +405,32 @@ namespace Microsoft.CodeAnalysis.CSharp
             for (int i = 0; i < n; i++)
             {
                 constraintClauses[i] = RemoveInvalidConstraints(typeParameters[i], constraintClauses[i], syntaxNodes[i], performOnlyCycleSafeValidation, diagnostics);
+            }
+        }
+
+        private TypeParameterConstraintClause GetDefaultTypeParameterConstraintClause(
+            TypeParameterSyntax typeParameterSyntax,
+            DiagnosticBag diagnostics,
+            bool isForOverride = false)
+        {
+            if (typeParameterSyntax.InlineTypeConstraints != null)
+            {
+                var constraintList = RecurCollectInlineConstraints(
+                    new SeparatedSyntaxList<TypeParameterConstraintSyntax>()
+                        .Add(typeParameterSyntax.InlineTypeConstraints.FirstConstraint),
+                    typeParameterSyntax.InlineTypeConstraints.Tail
+                );
+                
+                (TypeParameterConstraintClause constraintClause, _) = this.BindTypeParameterConstraints(typeParameterSyntax, constraintList, isForOverride, diagnostics);
+                return constraintClause;
+            }
+            else if (isForOverride || AreNullableAnnotationsEnabled(typeParameterSyntax.Identifier))
+            {
+                return TypeParameterConstraintClause.Empty;
+            }
+            else
+            {
+                return TypeParameterConstraintClause.ObliviousNullabilityIfReferenceType;
             }
         }
 

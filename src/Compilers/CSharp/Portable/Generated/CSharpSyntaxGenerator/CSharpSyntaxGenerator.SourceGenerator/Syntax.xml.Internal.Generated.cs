@@ -20435,11 +20435,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         internal readonly GreenNode? attributeLists;
         internal readonly SyntaxToken? varianceKeyword;
         internal readonly SyntaxToken identifier;
+        internal readonly InlineTypeConstraintListSyntax? inlineTypeConstraints;
 
-        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
           : base(kind, diagnostics, annotations)
         {
-            this.SlotCount = 3;
+            this.SlotCount = 4;
             if (attributeLists != null)
             {
                 this.AdjustFlagsAndWidth(attributeLists);
@@ -20452,13 +20453,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             }
             this.AdjustFlagsAndWidth(identifier);
             this.identifier = identifier;
+            if (inlineTypeConstraints != null)
+            {
+                this.AdjustFlagsAndWidth(inlineTypeConstraints);
+                this.inlineTypeConstraints = inlineTypeConstraints;
+            }
         }
 
-        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, SyntaxFactoryContext context)
+        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints, SyntaxFactoryContext context)
           : base(kind)
         {
             this.SetFactoryContext(context);
-            this.SlotCount = 3;
+            this.SlotCount = 4;
             if (attributeLists != null)
             {
                 this.AdjustFlagsAndWidth(attributeLists);
@@ -20471,12 +20477,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             }
             this.AdjustFlagsAndWidth(identifier);
             this.identifier = identifier;
+            if (inlineTypeConstraints != null)
+            {
+                this.AdjustFlagsAndWidth(inlineTypeConstraints);
+                this.inlineTypeConstraints = inlineTypeConstraints;
+            }
         }
 
-        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier)
+        internal TypeParameterSyntax(SyntaxKind kind, GreenNode? attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints)
           : base(kind)
         {
-            this.SlotCount = 3;
+            this.SlotCount = 4;
             if (attributeLists != null)
             {
                 this.AdjustFlagsAndWidth(attributeLists);
@@ -20489,6 +20500,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             }
             this.AdjustFlagsAndWidth(identifier);
             this.identifier = identifier;
+            if (inlineTypeConstraints != null)
+            {
+                this.AdjustFlagsAndWidth(inlineTypeConstraints);
+                this.inlineTypeConstraints = inlineTypeConstraints;
+            }
         }
 
         /// <summary>Gets the attribute declaration list.</summary>
@@ -20496,6 +20512,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         public SyntaxToken? VarianceKeyword => this.varianceKeyword;
         /// <summary>Gets the identifier.</summary>
         public SyntaxToken Identifier => this.identifier;
+        /// <summary>Gets the type constraint list.</summary>
+        public InlineTypeConstraintListSyntax? InlineTypeConstraints => this.inlineTypeConstraints;
 
         internal override GreenNode? GetSlot(int index)
             => index switch
@@ -20503,6 +20521,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 0 => this.attributeLists,
                 1 => this.varianceKeyword,
                 2 => this.identifier,
+                3 => this.inlineTypeConstraints,
                 _ => null,
             };
 
@@ -20511,11 +20530,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitTypeParameter(this);
         public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitTypeParameter(this);
 
-        public TypeParameterSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken varianceKeyword, SyntaxToken identifier)
+        public TypeParameterSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax inlineTypeConstraints)
         {
-            if (attributeLists != this.AttributeLists || varianceKeyword != this.VarianceKeyword || identifier != this.Identifier)
+            if (attributeLists != this.AttributeLists || varianceKeyword != this.VarianceKeyword || identifier != this.Identifier || inlineTypeConstraints != this.InlineTypeConstraints)
             {
-                var newNode = SyntaxFactory.TypeParameter(attributeLists, varianceKeyword, identifier);
+                var newNode = SyntaxFactory.TypeParameter(attributeLists, varianceKeyword, identifier, inlineTypeConstraints);
                 var diags = GetDiagnostics();
                 if (diags?.Length > 0)
                     newNode = newNode.WithDiagnosticsGreen(diags);
@@ -20529,15 +20548,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         }
 
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new TypeParameterSyntax(this.Kind, this.attributeLists, this.varianceKeyword, this.identifier, diagnostics, GetAnnotations());
+            => new TypeParameterSyntax(this.Kind, this.attributeLists, this.varianceKeyword, this.identifier, this.inlineTypeConstraints, diagnostics, GetAnnotations());
 
         internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new TypeParameterSyntax(this.Kind, this.attributeLists, this.varianceKeyword, this.identifier, GetDiagnostics(), annotations);
+            => new TypeParameterSyntax(this.Kind, this.attributeLists, this.varianceKeyword, this.identifier, this.inlineTypeConstraints, GetDiagnostics(), annotations);
 
         internal TypeParameterSyntax(ObjectReader reader)
           : base(reader)
         {
-            this.SlotCount = 3;
+            this.SlotCount = 4;
             var attributeLists = (GreenNode?)reader.ReadValue();
             if (attributeLists != null)
             {
@@ -20553,6 +20572,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             var identifier = (SyntaxToken)reader.ReadValue();
             AdjustFlagsAndWidth(identifier);
             this.identifier = identifier;
+            var inlineTypeConstraints = (InlineTypeConstraintListSyntax?)reader.ReadValue();
+            if (inlineTypeConstraints != null)
+            {
+                AdjustFlagsAndWidth(inlineTypeConstraints);
+                this.inlineTypeConstraints = inlineTypeConstraints;
+            }
         }
 
         internal override void WriteTo(ObjectWriter writer)
@@ -20561,11 +20586,266 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             writer.WriteValue(this.attributeLists);
             writer.WriteValue(this.varianceKeyword);
             writer.WriteValue(this.identifier);
+            writer.WriteValue(this.inlineTypeConstraints);
         }
 
         static TypeParameterSyntax()
         {
             ObjectBinder.RegisterTypeReader(typeof(TypeParameterSyntax), r => new TypeParameterSyntax(r));
+        }
+    }
+
+    /// <summary>Inline type constraint list syntax.</summary>
+    internal sealed partial class InlineTypeConstraintListSyntax : CSharpSyntaxNode
+    {
+        internal readonly SyntaxToken colonToken;
+        internal readonly TypeParameterConstraintSyntax firstConstraint;
+        internal readonly InlineTypeConstraintListTailSyntax? tail;
+
+        internal InlineTypeConstraintListSyntax(SyntaxKind kind, SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(firstConstraint);
+            this.firstConstraint = firstConstraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal InlineTypeConstraintListSyntax(SyntaxKind kind, SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(firstConstraint);
+            this.firstConstraint = firstConstraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal InlineTypeConstraintListSyntax(SyntaxKind kind, SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(firstConstraint);
+            this.firstConstraint = firstConstraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        public SyntaxToken ColonToken => this.colonToken;
+        /// <summary>Gets the constraint.</summary>
+        public TypeParameterConstraintSyntax FirstConstraint => this.firstConstraint;
+        public InlineTypeConstraintListTailSyntax? Tail => this.tail;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.colonToken,
+                1 => this.firstConstraint,
+                2 => this.tail,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.InlineTypeConstraintListSyntax(this, parent, position);
+
+        public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitInlineTypeConstraintList(this);
+        public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitInlineTypeConstraintList(this);
+
+        public InlineTypeConstraintListSyntax Update(SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax tail)
+        {
+            if (colonToken != this.ColonToken || firstConstraint != this.FirstConstraint || tail != this.Tail)
+            {
+                var newNode = SyntaxFactory.InlineTypeConstraintList(colonToken, firstConstraint, tail);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new InlineTypeConstraintListSyntax(this.Kind, this.colonToken, this.firstConstraint, this.tail, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new InlineTypeConstraintListSyntax(this.Kind, this.colonToken, this.firstConstraint, this.tail, GetDiagnostics(), annotations);
+
+        internal InlineTypeConstraintListSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var colonToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            var firstConstraint = (TypeParameterConstraintSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(firstConstraint);
+            this.firstConstraint = firstConstraint;
+            var tail = (InlineTypeConstraintListTailSyntax?)reader.ReadValue();
+            if (tail != null)
+            {
+                AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.colonToken);
+            writer.WriteValue(this.firstConstraint);
+            writer.WriteValue(this.tail);
+        }
+
+        static InlineTypeConstraintListSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(InlineTypeConstraintListSyntax), r => new InlineTypeConstraintListSyntax(r));
+        }
+    }
+
+    /// <summary>Inline type constraint list tail syntax.</summary>
+    internal sealed partial class InlineTypeConstraintListTailSyntax : CSharpSyntaxNode
+    {
+        internal readonly SyntaxToken plusToken;
+        internal readonly TypeParameterConstraintSyntax constraint;
+        internal readonly InlineTypeConstraintListTailSyntax? tail;
+
+        internal InlineTypeConstraintListTailSyntax(SyntaxKind kind, SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(plusToken);
+            this.plusToken = plusToken;
+            this.AdjustFlagsAndWidth(constraint);
+            this.constraint = constraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal InlineTypeConstraintListTailSyntax(SyntaxKind kind, SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(plusToken);
+            this.plusToken = plusToken;
+            this.AdjustFlagsAndWidth(constraint);
+            this.constraint = constraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal InlineTypeConstraintListTailSyntax(SyntaxKind kind, SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(plusToken);
+            this.plusToken = plusToken;
+            this.AdjustFlagsAndWidth(constraint);
+            this.constraint = constraint;
+            if (tail != null)
+            {
+                this.AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        public SyntaxToken PlusToken => this.plusToken;
+        /// <summary>Gets the constraint.</summary>
+        public TypeParameterConstraintSyntax Constraint => this.constraint;
+        public InlineTypeConstraintListTailSyntax? Tail => this.tail;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.plusToken,
+                1 => this.constraint,
+                2 => this.tail,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.InlineTypeConstraintListTailSyntax(this, parent, position);
+
+        public override void Accept(CSharpSyntaxVisitor visitor) => visitor.VisitInlineTypeConstraintListTail(this);
+        public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.VisitInlineTypeConstraintListTail(this);
+
+        public InlineTypeConstraintListTailSyntax Update(SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax tail)
+        {
+            if (plusToken != this.PlusToken || constraint != this.Constraint || tail != this.Tail)
+            {
+                var newNode = SyntaxFactory.InlineTypeConstraintListTail(plusToken, constraint, tail);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new InlineTypeConstraintListTailSyntax(this.Kind, this.plusToken, this.constraint, this.tail, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new InlineTypeConstraintListTailSyntax(this.Kind, this.plusToken, this.constraint, this.tail, GetDiagnostics(), annotations);
+
+        internal InlineTypeConstraintListTailSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var plusToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(plusToken);
+            this.plusToken = plusToken;
+            var constraint = (TypeParameterConstraintSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(constraint);
+            this.constraint = constraint;
+            var tail = (InlineTypeConstraintListTailSyntax?)reader.ReadValue();
+            if (tail != null)
+            {
+                AdjustFlagsAndWidth(tail);
+                this.tail = tail;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.plusToken);
+            writer.WriteValue(this.constraint);
+            writer.WriteValue(this.tail);
+        }
+
+        static InlineTypeConstraintListTailSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(InlineTypeConstraintListTailSyntax), r => new InlineTypeConstraintListTailSyntax(r));
         }
     }
 
@@ -33110,6 +33390,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         public virtual TResult VisitNameEquals(NameEqualsSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitTypeParameterList(TypeParameterListSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitTypeParameter(TypeParameterSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitClassDeclaration(ClassDeclarationSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitStructDeclaration(StructDeclarationSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitInterfaceDeclaration(InterfaceDeclarationSyntax node) => this.DefaultVisit(node);
@@ -33345,6 +33627,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
         public virtual void VisitNameEquals(NameEqualsSyntax node) => this.DefaultVisit(node);
         public virtual void VisitTypeParameterList(TypeParameterListSyntax node) => this.DefaultVisit(node);
         public virtual void VisitTypeParameter(TypeParameterSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node) => this.DefaultVisit(node);
         public virtual void VisitClassDeclaration(ClassDeclarationSyntax node) => this.DefaultVisit(node);
         public virtual void VisitStructDeclaration(StructDeclarationSyntax node) => this.DefaultVisit(node);
         public virtual void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node) => this.DefaultVisit(node);
@@ -33886,7 +34170,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             => node.Update((SyntaxToken)Visit(node.LessThanToken), VisitList(node.Parameters), (SyntaxToken)Visit(node.GreaterThanToken));
 
         public override CSharpSyntaxNode VisitTypeParameter(TypeParameterSyntax node)
-            => node.Update(VisitList(node.AttributeLists), (SyntaxToken)Visit(node.VarianceKeyword), (SyntaxToken)Visit(node.Identifier));
+            => node.Update(VisitList(node.AttributeLists), (SyntaxToken)Visit(node.VarianceKeyword), (SyntaxToken)Visit(node.Identifier), (InlineTypeConstraintListSyntax)Visit(node.InlineTypeConstraints));
+
+        public override CSharpSyntaxNode VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node)
+            => node.Update((SyntaxToken)Visit(node.ColonToken), (TypeParameterConstraintSyntax)Visit(node.FirstConstraint), (InlineTypeConstraintListTailSyntax)Visit(node.Tail));
+
+        public override CSharpSyntaxNode VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node)
+            => node.Update((SyntaxToken)Visit(node.PlusToken), (TypeParameterConstraintSyntax)Visit(node.Constraint), (InlineTypeConstraintListTailSyntax)Visit(node.Tail));
 
         public override CSharpSyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
             => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), (SyntaxToken)Visit(node.Keyword), (SyntaxToken)Visit(node.Identifier), (TypeParameterListSyntax)Visit(node.TypeParameterList), (BaseListSyntax)Visit(node.BaseList), VisitList(node.ConstraintClauses), (SyntaxToken)Visit(node.OpenBraceToken), VisitList(node.Members), (SyntaxToken)Visit(node.CloseBraceToken), (SyntaxToken)Visit(node.SemicolonToken));
@@ -37361,7 +37651,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             return result;
         }
 
-        public TypeParameterSyntax TypeParameter(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier)
+        public TypeParameterSyntax TypeParameter(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints)
         {
 #if DEBUG
             if (varianceKeyword != null)
@@ -37378,11 +37668,43 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
 #endif
 
-            int hash;
-            var cached = CSharpSyntaxNodeCache.TryGetNode((int)SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier, this.context, out hash);
-            if (cached != null) return (TypeParameterSyntax)cached;
+            return new TypeParameterSyntax(SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier, inlineTypeConstraints, this.context);
+        }
 
-            var result = new TypeParameterSyntax(SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier, this.context);
+        public InlineTypeConstraintListSyntax InlineTypeConstraintList(SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+#if DEBUG
+            if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
+            if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
+            if (firstConstraint == null) throw new ArgumentNullException(nameof(firstConstraint));
+#endif
+
+            int hash;
+            var cached = CSharpSyntaxNodeCache.TryGetNode((int)SyntaxKind.InlineTypeConstraintList, colonToken, firstConstraint, tail, this.context, out hash);
+            if (cached != null) return (InlineTypeConstraintListSyntax)cached;
+
+            var result = new InlineTypeConstraintListSyntax(SyntaxKind.InlineTypeConstraintList, colonToken, firstConstraint, tail, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public InlineTypeConstraintListTailSyntax InlineTypeConstraintListTail(SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+#if DEBUG
+            if (plusToken == null) throw new ArgumentNullException(nameof(plusToken));
+            if (plusToken.Kind != SyntaxKind.PlusToken) throw new ArgumentException(nameof(plusToken));
+            if (constraint == null) throw new ArgumentNullException(nameof(constraint));
+#endif
+
+            int hash;
+            var cached = CSharpSyntaxNodeCache.TryGetNode((int)SyntaxKind.InlineTypeConstraintListTail, plusToken, constraint, tail, this.context, out hash);
+            if (cached != null) return (InlineTypeConstraintListTailSyntax)cached;
+
+            var result = new InlineTypeConstraintListTailSyntax(SyntaxKind.InlineTypeConstraintListTail, plusToken, constraint, tail, this.context);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -42235,7 +42557,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             return result;
         }
 
-        public static TypeParameterSyntax TypeParameter(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier)
+        public static TypeParameterSyntax TypeParameter(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken? varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints)
         {
 #if DEBUG
             if (varianceKeyword != null)
@@ -42252,11 +42574,43 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
             if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
 #endif
 
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier, out hash);
-            if (cached != null) return (TypeParameterSyntax)cached;
+            return new TypeParameterSyntax(SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier, inlineTypeConstraints);
+        }
 
-            var result = new TypeParameterSyntax(SyntaxKind.TypeParameter, attributeLists.Node, varianceKeyword, identifier);
+        public static InlineTypeConstraintListSyntax InlineTypeConstraintList(SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+#if DEBUG
+            if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
+            if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
+            if (firstConstraint == null) throw new ArgumentNullException(nameof(firstConstraint));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.InlineTypeConstraintList, colonToken, firstConstraint, tail, out hash);
+            if (cached != null) return (InlineTypeConstraintListSyntax)cached;
+
+            var result = new InlineTypeConstraintListSyntax(SyntaxKind.InlineTypeConstraintList, colonToken, firstConstraint, tail);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static InlineTypeConstraintListTailSyntax InlineTypeConstraintListTail(SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+#if DEBUG
+            if (plusToken == null) throw new ArgumentNullException(nameof(plusToken));
+            if (plusToken.Kind != SyntaxKind.PlusToken) throw new ArgumentException(nameof(plusToken));
+            if (constraint == null) throw new ArgumentNullException(nameof(constraint));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.InlineTypeConstraintListTail, plusToken, constraint, tail, out hash);
+            if (cached != null) return (InlineTypeConstraintListTailSyntax)cached;
+
+            var result = new InlineTypeConstraintListTailSyntax(SyntaxKind.InlineTypeConstraintListTail, plusToken, constraint, tail);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -44029,6 +44383,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax.InternalSyntax
                 typeof(NameEqualsSyntax),
                 typeof(TypeParameterListSyntax),
                 typeof(TypeParameterSyntax),
+                typeof(InlineTypeConstraintListSyntax),
+                typeof(InlineTypeConstraintListTailSyntax),
                 typeof(ClassDeclarationSyntax),
                 typeof(StructDeclarationSyntax),
                 typeof(InterfaceDeclarationSyntax),

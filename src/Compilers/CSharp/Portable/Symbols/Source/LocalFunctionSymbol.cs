@@ -493,13 +493,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if (_lazyTypeParameterConstraintKinds.IsDefault)
             {
                 var syntax = Syntax;
+                var diagnostics = DiagnosticBag.GetInstance();
                 var constraints = this.MakeTypeParameterConstraintKinds(
                     _binder,
                     TypeParameters,
                     syntax.TypeParameterList,
-                    syntax.ConstraintClauses);
-
-                ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintKinds, constraints);
+                    syntax.ConstraintClauses,
+                    diagnostics);
+                lock (_declarationDiagnostics)
+                {
+                    if (_lazyTypeParameterConstraintTypes.IsDefault)
+                    {
+                        _declarationDiagnostics.AddRange(diagnostics);
+                        _lazyTypeParameterConstraintKinds = constraints;
+                    }
+                }
+                diagnostics.Free();
             }
 
             return _lazyTypeParameterConstraintKinds;

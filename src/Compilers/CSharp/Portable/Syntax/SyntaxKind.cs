@@ -768,6 +768,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         OperatorDeclaration = 8876,
         ConversionOperatorDeclaration = 8877,
         ConstructorDeclaration = 8878,
+        InlineTypeConstraintList = 8879,
+        InlineTypeConstraintListTail = 8880,
 
         BaseConstructorInitializer = 8889,
         ThisConstructorInitializer = 8890,

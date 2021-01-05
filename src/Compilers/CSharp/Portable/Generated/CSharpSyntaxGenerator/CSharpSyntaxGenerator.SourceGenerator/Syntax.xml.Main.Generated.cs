@@ -477,6 +477,12 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>Called when the visitor visits a TypeParameterSyntax node.</summary>
         public virtual TResult? VisitTypeParameter(TypeParameterSyntax node) => this.DefaultVisit(node);
 
+        /// <summary>Called when the visitor visits a InlineTypeConstraintListSyntax node.</summary>
+        public virtual TResult? VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node) => this.DefaultVisit(node);
+
+        /// <summary>Called when the visitor visits a InlineTypeConstraintListTailSyntax node.</summary>
+        public virtual TResult? VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node) => this.DefaultVisit(node);
+
         /// <summary>Called when the visitor visits a ClassDeclarationSyntax node.</summary>
         public virtual TResult? VisitClassDeclaration(ClassDeclarationSyntax node) => this.DefaultVisit(node);
 
@@ -1173,6 +1179,12 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// <summary>Called when the visitor visits a TypeParameterSyntax node.</summary>
         public virtual void VisitTypeParameter(TypeParameterSyntax node) => this.DefaultVisit(node);
 
+        /// <summary>Called when the visitor visits a InlineTypeConstraintListSyntax node.</summary>
+        public virtual void VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node) => this.DefaultVisit(node);
+
+        /// <summary>Called when the visitor visits a InlineTypeConstraintListTailSyntax node.</summary>
+        public virtual void VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node) => this.DefaultVisit(node);
+
         /// <summary>Called when the visitor visits a ClassDeclarationSyntax node.</summary>
         public virtual void VisitClassDeclaration(ClassDeclarationSyntax node) => this.DefaultVisit(node);
 
@@ -1867,7 +1879,13 @@ namespace Microsoft.CodeAnalysis.CSharp
             => node.Update(VisitToken(node.LessThanToken), VisitList(node.Parameters), VisitToken(node.GreaterThanToken));
 
         public override SyntaxNode? VisitTypeParameter(TypeParameterSyntax node)
-            => node.Update(VisitList(node.AttributeLists), VisitToken(node.VarianceKeyword), VisitToken(node.Identifier));
+            => node.Update(VisitList(node.AttributeLists), VisitToken(node.VarianceKeyword), VisitToken(node.Identifier), (InlineTypeConstraintListSyntax?)Visit(node.InlineTypeConstraints));
+
+        public override SyntaxNode? VisitInlineTypeConstraintList(InlineTypeConstraintListSyntax node)
+            => node.Update(VisitToken(node.ColonToken), (TypeParameterConstraintSyntax?)Visit(node.FirstConstraint) ?? throw new ArgumentNullException("firstConstraint"), (InlineTypeConstraintListTailSyntax?)Visit(node.Tail));
+
+        public override SyntaxNode? VisitInlineTypeConstraintListTail(InlineTypeConstraintListTailSyntax node)
+            => node.Update(VisitToken(node.PlusToken), (TypeParameterConstraintSyntax?)Visit(node.Constraint) ?? throw new ArgumentNullException("constraint"), (InlineTypeConstraintListTailSyntax?)Visit(node.Tail));
 
         public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
             => node.Update(VisitList(node.AttributeLists), VisitList(node.Modifiers), VisitToken(node.Keyword), VisitToken(node.Identifier), (TypeParameterListSyntax?)Visit(node.TypeParameterList), (BaseListSyntax?)Visit(node.BaseList), VisitList(node.ConstraintClauses), VisitToken(node.OpenBraceToken), VisitList(node.Members), VisitToken(node.CloseBraceToken), VisitToken(node.SemicolonToken));
@@ -4693,7 +4711,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             => SyntaxFactory.TypeParameterList(SyntaxFactory.Token(SyntaxKind.LessThanToken), parameters, SyntaxFactory.Token(SyntaxKind.GreaterThanToken));
 
         /// <summary>Creates a new TypeParameterSyntax instance.</summary>
-        public static TypeParameterSyntax TypeParameter(SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken varianceKeyword, SyntaxToken identifier)
+        public static TypeParameterSyntax TypeParameter(SyntaxList<AttributeListSyntax> attributeLists, SyntaxToken varianceKeyword, SyntaxToken identifier, InlineTypeConstraintListSyntax? inlineTypeConstraints)
         {
             switch (varianceKeyword.Kind())
             {
@@ -4703,16 +4721,48 @@ namespace Microsoft.CodeAnalysis.CSharp
                 default: throw new ArgumentException(nameof(varianceKeyword));
             }
             if (identifier.Kind() != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
-            return (TypeParameterSyntax)Syntax.InternalSyntax.SyntaxFactory.TypeParameter(attributeLists.Node.ToGreenList<Syntax.InternalSyntax.AttributeListSyntax>(), (Syntax.InternalSyntax.SyntaxToken?)varianceKeyword.Node, (Syntax.InternalSyntax.SyntaxToken)identifier.Node!).CreateRed();
+            return (TypeParameterSyntax)Syntax.InternalSyntax.SyntaxFactory.TypeParameter(attributeLists.Node.ToGreenList<Syntax.InternalSyntax.AttributeListSyntax>(), (Syntax.InternalSyntax.SyntaxToken?)varianceKeyword.Node, (Syntax.InternalSyntax.SyntaxToken)identifier.Node!, inlineTypeConstraints == null ? null : (Syntax.InternalSyntax.InlineTypeConstraintListSyntax)inlineTypeConstraints.Green).CreateRed();
         }
 
         /// <summary>Creates a new TypeParameterSyntax instance.</summary>
         public static TypeParameterSyntax TypeParameter(SyntaxToken identifier)
-            => SyntaxFactory.TypeParameter(default, default, identifier);
+            => SyntaxFactory.TypeParameter(default, default, identifier, default);
 
         /// <summary>Creates a new TypeParameterSyntax instance.</summary>
         public static TypeParameterSyntax TypeParameter(string identifier)
-            => SyntaxFactory.TypeParameter(default, default, SyntaxFactory.Identifier(identifier));
+            => SyntaxFactory.TypeParameter(default, default, SyntaxFactory.Identifier(identifier), default);
+
+        /// <summary>Creates a new InlineTypeConstraintListSyntax instance.</summary>
+        public static InlineTypeConstraintListSyntax InlineTypeConstraintList(SyntaxToken colonToken, TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+            if (colonToken.Kind() != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
+            if (firstConstraint == null) throw new ArgumentNullException(nameof(firstConstraint));
+            return (InlineTypeConstraintListSyntax)Syntax.InternalSyntax.SyntaxFactory.InlineTypeConstraintList((Syntax.InternalSyntax.SyntaxToken)colonToken.Node!, (Syntax.InternalSyntax.TypeParameterConstraintSyntax)firstConstraint.Green, tail == null ? null : (Syntax.InternalSyntax.InlineTypeConstraintListTailSyntax)tail.Green).CreateRed();
+        }
+
+        /// <summary>Creates a new InlineTypeConstraintListSyntax instance.</summary>
+        public static InlineTypeConstraintListSyntax InlineTypeConstraintList(TypeParameterConstraintSyntax firstConstraint, InlineTypeConstraintListTailSyntax? tail)
+            => SyntaxFactory.InlineTypeConstraintList(SyntaxFactory.Token(SyntaxKind.ColonToken), firstConstraint, tail);
+
+        /// <summary>Creates a new InlineTypeConstraintListSyntax instance.</summary>
+        public static InlineTypeConstraintListSyntax InlineTypeConstraintList(TypeParameterConstraintSyntax firstConstraint)
+            => SyntaxFactory.InlineTypeConstraintList(SyntaxFactory.Token(SyntaxKind.ColonToken), firstConstraint, default);
+
+        /// <summary>Creates a new InlineTypeConstraintListTailSyntax instance.</summary>
+        public static InlineTypeConstraintListTailSyntax InlineTypeConstraintListTail(SyntaxToken plusToken, TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail)
+        {
+            if (plusToken.Kind() != SyntaxKind.PlusToken) throw new ArgumentException(nameof(plusToken));
+            if (constraint == null) throw new ArgumentNullException(nameof(constraint));
+            return (InlineTypeConstraintListTailSyntax)Syntax.InternalSyntax.SyntaxFactory.InlineTypeConstraintListTail((Syntax.InternalSyntax.SyntaxToken)plusToken.Node!, (Syntax.InternalSyntax.TypeParameterConstraintSyntax)constraint.Green, tail == null ? null : (Syntax.InternalSyntax.InlineTypeConstraintListTailSyntax)tail.Green).CreateRed();
+        }
+
+        /// <summary>Creates a new InlineTypeConstraintListTailSyntax instance.</summary>
+        public static InlineTypeConstraintListTailSyntax InlineTypeConstraintListTail(TypeParameterConstraintSyntax constraint, InlineTypeConstraintListTailSyntax? tail)
+            => SyntaxFactory.InlineTypeConstraintListTail(SyntaxFactory.Token(SyntaxKind.PlusToken), constraint, tail);
+
+        /// <summary>Creates a new InlineTypeConstraintListTailSyntax instance.</summary>
+        public static InlineTypeConstraintListTailSyntax InlineTypeConstraintListTail(TypeParameterConstraintSyntax constraint)
+            => SyntaxFactory.InlineTypeConstraintListTail(SyntaxFactory.Token(SyntaxKind.PlusToken), constraint, default);
 
         /// <summary>Creates a new ClassDeclarationSyntax instance.</summary>
         public static ClassDeclarationSyntax ClassDeclaration(SyntaxList<AttributeListSyntax> attributeLists, SyntaxTokenList modifiers, SyntaxToken keyword, SyntaxToken identifier, TypeParameterListSyntax? typeParameterList, BaseListSyntax? baseList, SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, SyntaxToken openBraceToken, SyntaxList<MemberDeclarationSyntax> members, SyntaxToken closeBraceToken, SyntaxToken semicolonToken)

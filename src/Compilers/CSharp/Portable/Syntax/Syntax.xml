@@ -3205,6 +3205,41 @@
       </PropertyComment>
       <Kind Name="IdentifierToken"/>
     </Field>
+    <Field Name="InlineTypeConstraints" Type="InlineTypeConstraintListSyntax" Optional="true">
+        <PropertyComment>
+            <summary>Gets the type constraint list.</summary>
+        </PropertyComment>
+    </Field>
+  </Node>
+  <Node Name="InlineTypeConstraintListSyntax" Base="CSharpSyntaxNode">
+    <TypeComment>
+      <summary>Inline type constraint list syntax.</summary>
+    </TypeComment>
+    <Kind Name="InlineTypeConstraintList" />
+    <Field Name="ColonToken" Type="SyntaxToken">
+      <Kind Name="ColonToken"/>
+    </Field>
+    <Field Name="FirstConstraint" Type="TypeParameterConstraintSyntax">
+      <PropertyComment>
+        <summary>Gets the constraint.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="Tail" Type="InlineTypeConstraintListTailSyntax" Optional="true" />
+  </Node>
+  <Node Name="InlineTypeConstraintListTailSyntax" Base="CSharpSyntaxNode">
+      <TypeComment>
+          <summary>Inline type constraint list tail syntax.</summary>
+      </TypeComment>
+      <Kind Name="InlineTypeConstraintListTail" />
+      <Field Name="PlusToken" Type="SyntaxToken">
+          <Kind Name="PlusToken"/>
+      </Field>
+      <Field Name="Constraint" Type="TypeParameterConstraintSyntax">
+          <PropertyComment>
+              <summary>Gets the constraint.</summary>
+          </PropertyComment>
+      </Field>
+      <Field Name="Tail" Type="InlineTypeConstraintListTailSyntax" Optional="true" />
   </Node>
   <AbstractNode Name="BaseTypeDeclarationSyntax" Base="MemberDeclarationSyntax">
     <TypeComment>

@@ -344,7 +344,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             Binder binder,
             ImmutableArray<TypeParameterSymbol> typeParameters,
             TypeParameterListSyntax typeParameterList,
-            SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses)
+            SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses,
+            DiagnosticBag diagnostics)
         {
             if (typeParameters.Length == 0)
             {
@@ -355,7 +356,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (constraintClauses.Count == 0)
             {
-                clauses = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+                clauses = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList, diagnostics);
             }
             else
             {

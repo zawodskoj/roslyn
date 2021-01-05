@@ -298,7 +298,7 @@ next:;
             var constraintKinds = _lazyTypeParameterConstraintKinds;
             if (constraintKinds.IsDefault)
             {
-                ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintKinds, MakeTypeParameterConstraintKinds());
+                ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeParameterConstraintKinds, MakeTypeParameterConstraintKinds(DiagnosticBag.GetInstance()));
                 constraintKinds = _lazyTypeParameterConstraintKinds;
             }
 
@@ -334,7 +334,7 @@ next:;
                     {
                         binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
 
-                        constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+                        constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList, diagnostics);
                     }
                     else
                     {
@@ -386,7 +386,7 @@ next:;
             return false;
         }
 
-        private ImmutableArray<TypeParameterConstraintKind> MakeTypeParameterConstraintKinds()
+        private ImmutableArray<TypeParameterConstraintKind> MakeTypeParameterConstraintKinds(DiagnosticBag diagnostics)
         {
             var typeParameters = this.TypeParameters;
             var results = ImmutableArray<TypeParameterConstraintClause>.Empty;
@@ -414,7 +414,7 @@ next:;
                     if (constraintClauses.Count == 0)
                     {
                         binder = binderFactory.GetBinder(typeParameterList.Parameters[0]);
-                        constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList);
+                        constraints = binder.GetDefaultTypeParameterConstraintClauses(typeParameterList, diagnostics);
                     }
                     else
                     {
